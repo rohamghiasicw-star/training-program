@@ -1,5 +1,5 @@
 /* PROTOCOL service worker — offline + installable */
-const CACHE = 'protocol-v2';
+const CACHE = 'protocol-v3';
 const ASSETS = [
   './',
   './index.html',
