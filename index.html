@@ -145,6 +145,34 @@ section{position:relative;z-index:1;padding:72px 0;border-top:1px solid var(--li
 .pill.rir-mid{background:rgba(255,180,84,.12);color:var(--warn)}
 .note{font-size:13px;color:var(--faint)}
 
+/* fillable log */
+.tbl th.cdone,.tbl td.donecell{width:42px;padding-left:22px;padding-right:0}
+.donebox{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--line-2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;color:#0a0a0a;font-size:13px;font-weight:700;transition:.2s;background:transparent;user-select:none}
+.donebox:hover{border-color:var(--accent)}
+.donebox.on{background:var(--accent);border-color:var(--accent)}
+tr.donerow td.ex{text-decoration:line-through;text-decoration-color:var(--faint);opacity:.5}
+td.log{min-width:170px}
+.loginput{width:100%;background:var(--bg-2);border:1px solid var(--line);border-radius:9px;color:var(--txt);
+  font-family:'Inter';font-size:13.5px;padding:9px 11px;transition:.18s;font-variant-numeric:tabular-nums}
+.loginput:focus{outline:none;border-color:var(--accent);background:#0c0d0f;box-shadow:0 0 0 3px rgba(198,255,61,.12)}
+.loginput::placeholder{color:var(--faint)}
+.loginput.filled{border-color:var(--line-2)}
+.log-hint{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line-2);
+  border-radius:12px;padding:13px 18px;margin-bottom:20px;font-size:14px;color:var(--muted)}
+.log-hint .e{font-size:18px}
+.log-hint b{color:var(--txt)}
+.sess-progress{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:8px}
+.sess-progress .bar{width:70px;height:6px;background:var(--card-2);border-radius:999px;overflow:hidden;display:inline-block}
+.sess-progress .bar i{display:block;height:100%;background:var(--accent);border-radius:999px;transition:width .35s}
+.resetbtn{background:transparent;border:1px solid var(--line-2);color:var(--faint);font-family:'Inter';font-weight:600;
+  font-size:12px;padding:6px 12px;border-radius:8px;cursor:pointer;transition:.2s;margin-top:8px}
+.resetbtn:hover{border-color:var(--danger);color:var(--danger)}
+.savetoast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);
+  color:#0a0a0a;font-weight:600;font-size:13.5px;padding:10px 20px;border-radius:999px;z-index:90;opacity:0;
+  pointer-events:none;transition:opacity .25s,transform .25s;box-shadow:0 8px 30px rgba(198,255,61,.3)}
+.savetoast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
 /* changed table / two-col lists */
 .changed{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .changed .ch-row{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line)}
@@ -210,6 +238,7 @@ body.standard .safe-only{display:none}
 </head>
 <body class="safe">
 <div class="glow"></div>
+<div class="savetoast" id="savetoast">Saved ✓</div>
 
 <header class="nav">
   <div class="wrap nav-in">
@@ -299,6 +328,7 @@ body.standard .safe-only{display:none}
       <h2>Your four sessions</h2>
       <p>Effort is load-dependent — leave reps in reserve on the heavy compounds, take machines and isolation to failure. Rest 2–3 min on hard sets.</p>
     </div>
+    <div class="log-hint reveal"><span class="e">📝</span> <span><b>This is your live logbook.</b> Tick off each exercise and type your weights &amp; reps into any row — it saves automatically on this device, no account needed.</span></div>
     <div class="tabs reveal" id="session-tabs"></div>
     <div class="reveal" id="session-body"></div>
     <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:18px">
@@ -547,6 +577,21 @@ const CHECKLIST = {
 /* ---------- RENDER ---------- */
 const $ = s => document.querySelector(s);
 let current = "safe";
+let currentSessionIndex = 0;
+
+/* ---- persistence (localStorage; per device, no account) ---- */
+const store = {
+  get:(k)=>{try{return localStorage.getItem(k)||"";}catch(e){return "";}},
+  set:(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}},
+  del:(k)=>{try{localStorage.removeItem(k);}catch(e){}}
+};
+const slug = s => s.replace(/[^a-z0-9]+/gi,"-").toLowerCase();
+const exKey = (sid,name) => `${current}:${sid}:${slug(name)}`;
+let toastT;
+function flashSaved(){
+  const t=$("#savetoast"); if(!t)return; t.classList.add("show");
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),900);
+}
 
 function rirClass(r){ if(r==="—")return ""; const lo=parseInt(r,10); return lo>=1 ? "rir-mid" : "rir-low"; }
 
@@ -583,42 +628,93 @@ function render(v){
   }).join("");
   setTimeout(()=>document.querySelectorAll(".vfill").forEach(f=>f.style.width=f.dataset.w+"%"),120);
 
-  // checklist
-  $("#checklist").innerHTML = CHECKLIST[v].map(c=>
-    `<div class="citem"><div class="box">✓</div><span>${c}</span></div>`).join("");
-  document.querySelectorAll(".citem").forEach(it=>it.addEventListener("click",()=>it.classList.toggle("on")));
+  // checklist (persisted)
+  $("#checklist").innerHTML = CHECKLIST[v].map((c,idx)=>{
+    const on = store.get(`check:${v}:${idx}`)==="1";
+    return `<div class="citem ${on?'on':''}" data-ci="${idx}"><div class="box">✓</div><span>${c}</span></div>`;
+  }).join("");
+  document.querySelectorAll(".citem").forEach(it=>it.addEventListener("click",()=>{
+    it.classList.toggle("on");
+    store.set(`check:${v}:${it.dataset.ci}`, it.classList.contains("on")?"1":"0");
+    flashSaved();
+  }));
 
   observeReveals();
 }
 
 function renderSession(i){
+  currentSessionIndex = i;
   const s = SESSIONS[current][i];
   const body = s.rows.map(r=>{
     const core = r[5] ? " core" : "";
     const rir = r[3];
     const rirCell = rir==="—" ? `<span class="note">core</span>` : `<span class="pill ${rirClass(rir)}">${rir}</span>`;
-    return `<tr>
-      <td class="ex${core}">${r[0]}</td>
+    const k = exKey(s.id, r[0]);
+    const logVal = store.get("log:"+k).replace(/"/g,"&quot;");
+    const done = store.get("done:"+k)==="1";
+    return `<tr class="${done?'donerow':''}">
+      <td class="donecell"><div class="donebox ${done?'on':''}" data-done="${k}">${done?'✓':''}</div></td>
+      <td class="ex${core}">${r[0]}<div class="note" style="font-weight:400;margin-top:3px">${r[4]}</div></td>
       <td><span class="pill sets">${r[1]}</span></td>
       <td><span class="pill reps">${r[2]}</span></td>
       <td>${rirCell}</td>
-      <td class="note">${r[4]}</td>
+      <td class="log"><input class="loginput ${logVal?'filled':''}" data-log="${k}" value="${logVal}" placeholder="weight × reps…" inputmode="text" /></td>
     </tr>`;
   }).join("");
   $("#session-body").innerHTML = `
     <div class="session">
-      <div class="session-head"><h3>${s.id}</h3><div class="focus">${s.focus}</div></div>
+      <div class="session-head">
+        <div><h3>${s.id}</h3><div class="focus">${s.focus}</div></div>
+        <div style="text-align:right"><div class="sess-progress" id="sessprog"></div><button class="resetbtn" data-reset="${i}">Reset session</button></div>
+      </div>
       <table class="tbl">
-        <thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>RIR</th><th>Notes</th></tr></thead>
+        <thead><tr><th class="cdone"></th><th>Exercise</th><th>Sets</th><th>Reps</th><th>RIR</th><th>Your log — weight × reps</th></tr></thead>
         <tbody>${body}</tbody>
       </table>
     </div>`;
+  updateProgress();
   document.querySelectorAll("#session-tabs .tab").forEach((t,j)=>t.classList.toggle("active",i===j));
+}
+
+function updateProgress(){
+  const s = SESSIONS[current][currentSessionIndex]; if(!s) return;
+  let done=0; s.rows.forEach(r=>{ if(store.get("done:"+exKey(s.id,r[0]))==="1") done++; });
+  const pct = Math.round((done/s.rows.length)*100);
+  const el = document.getElementById("sessprog");
+  if(el) el.innerHTML = `<span class="bar"><i style="width:${pct}%"></i></span> ${done}/${s.rows.length} done`;
+}
+
+function resetSession(i){
+  const s = SESSIONS[current][i];
+  s.rows.forEach(r=>{ const k=exKey(s.id,r[0]); store.del("log:"+k); store.del("done:"+k); });
+  renderSession(i);
+  flashSaved();
 }
 
 /* events */
 $("#session-tabs").addEventListener("click",e=>{
   const b=e.target.closest(".tab"); if(b) renderSession(+b.dataset.i);
+});
+
+/* logbook: save weights/reps as you type */
+$("#session-body").addEventListener("input",e=>{
+  const inp=e.target.closest(".loginput"); if(!inp)return;
+  store.set("log:"+inp.dataset.log, inp.value);
+  inp.classList.toggle("filled", !!inp.value);
+  flashSaved();
+});
+/* logbook: check off exercises + reset */
+$("#session-body").addEventListener("click",e=>{
+  const db=e.target.closest(".donebox");
+  if(db){
+    const k=db.dataset.done, on=store.get("done:"+k)!=="1";
+    store.set("done:"+k, on?"1":"0");
+    db.classList.toggle("on",on); db.textContent=on?"✓":"";
+    db.closest("tr").classList.toggle("donerow",on);
+    updateProgress(); flashSaved(); return;
+  }
+  const rb=e.target.closest(".resetbtn");
+  if(rb && confirm("Clear all logs and checks for this session?")) resetSession(+rb.dataset.reset);
 });
 $("#vtoggle").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b)return;
