@@ -235,6 +235,58 @@ footer .fbot{display:flex;justify-content:space-between;align-items:center;margi
 .safe-only{display:block}
 body.standard .safe-only{display:none}
 
+/* ============ MOBILE ============ */
+@media(max-width:620px){
+  .wrap{padding:0 16px}
+  section{padding:46px 0}
+  .hero{padding:60px 0 40px}
+  .hero h1{font-size:clamp(34px,9vw,46px)}
+  .stats{margin-top:36px;gap:12px}
+  .stat{padding:18px 16px}
+  .stat .num{font-size:28px}
+  .sec-head{margin-bottom:28px}
+  .nav-in{height:58px}
+  .logo{font-size:16px}
+  .toggle button{padding:7px 11px;font-size:12px}
+  .cta-row .btn{flex:1;justify-content:center}
+  .med{flex-direction:column;gap:12px;padding:20px}
+  .grid-2{gap:14px}
+  .icard{padding:20px}
+
+  /* session table -> stacked cards */
+  .session{border:0;background:transparent;overflow:visible}
+  .session-head{padding:0 2px 14px;flex-direction:column;align-items:flex-start;gap:8px;border:0}
+  .tbl thead{display:none}
+  .tbl,.tbl tbody{display:block;width:100%}
+  .tbl tr{display:block;position:relative;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;margin-bottom:12px;padding:16px 16px 14px}
+  .tbl tr:hover td{background:transparent}
+  .tbl td{display:inline-block;border:0;padding:0;vertical-align:top}
+  .tbl td.donecell{position:absolute;top:14px;right:14px;width:auto;padding:0}
+  .donebox{width:28px;height:28px;border-radius:8px;font-size:15px}
+  .tbl td.ex{display:block;width:100%;font-size:15.5px;padding-right:42px;margin-bottom:10px}
+  .tbl td.ex .note{font-size:12.5px}
+  .tbl td.c-sets,.tbl td.c-reps,.tbl td.c-rir{margin:0 20px 0 0}
+  .tbl td.c-sets::before,.tbl td.c-reps::before,.tbl td.c-rir::before{
+    content:attr(data-label);display:block;font-size:9.5px;text-transform:uppercase;
+    letter-spacing:.05em;color:var(--faint);margin-bottom:5px;font-weight:600}
+  .tbl td.log{display:block;width:100%;margin-top:14px}
+  .tbl td.log::before{content:attr(data-label);display:block;font-size:9.5px;text-transform:uppercase;
+    letter-spacing:.05em;color:var(--faint);margin-bottom:5px;font-weight:600}
+  .loginput{font-size:16px;padding:11px 12px}   /* 16px = no iOS zoom-on-focus */
+  .pill{font-size:13px;padding:5px 11px}
+  .tabs{gap:6px}
+  .tab{flex:1;text-align:center;padding:11px 8px;font-size:13px}
+  .sess-progress .bar{width:56px}
+  .week{grid-template-columns:1fr 1fr;gap:10px}
+  .citem .box{width:26px;height:26px}
+  .steps .step{padding:16px}
+}
+@media(max-width:380px){
+  .logo{font-size:0}                           /* tiny screens: dot-only logo, frees room for toggle */
+  .logo .dot{width:13px;height:13px}
+}
+
 /* references */
 .refs{display:grid;gap:2px}
 .refrow{display:flex;gap:14px;padding:12px 4px;border-bottom:1px solid var(--line);align-items:baseline}
@@ -751,10 +803,10 @@ function renderSession(i){
     return `<tr class="${done?'donerow':''}">
       <td class="donecell"><div class="donebox ${done?'on':''}" data-done="${k}">${done?'✓':''}</div></td>
       <td class="ex${core}">${r[0]}<div class="note" style="font-weight:400;margin-top:3px">${r[4]}</div></td>
-      <td><span class="pill sets">${r[1]}</span></td>
-      <td><span class="pill reps">${r[2]}</span></td>
-      <td>${rirCell}</td>
-      <td class="log"><input class="loginput ${logVal?'filled':''}" data-log="${k}" value="${logVal}" placeholder="weight × reps…" inputmode="text" /></td>
+      <td class="c-sets" data-label="Sets"><span class="pill sets">${r[1]}</span></td>
+      <td class="c-reps" data-label="Reps"><span class="pill reps">${r[2]}</span></td>
+      <td class="c-rir" data-label="RIR">${rirCell}</td>
+      <td class="log" data-label="Your log"><input class="loginput ${logVal?'filled':''}" data-log="${k}" value="${logVal}" placeholder="weight × reps…" inputmode="text" /></td>
     </tr>`;
   }).join("");
   $("#session-body").innerHTML = `
