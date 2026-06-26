@@ -345,6 +345,7 @@ body.standard .safe-only{display:none}
     <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:18px">
       <div class="note"><span class="pill rir-low">RIR 0–1</span> &nbsp;take to / near failure</div>
       <div class="note"><span class="pill rir-mid">RIR 1–3</span> &nbsp;leave reps in the tank</div>
+      <div class="note">🔁 <b style="color:var(--accent)">Last set</b> on tagged isolation moves: full-ROM failure, then 3–6 partial reps in the stretch (ease in over 2–4 weeks — they're high-soreness).</div>
     </div>
   </div>
 </section>
@@ -381,9 +382,9 @@ body.standard .safe-only{display:none}
     </div>
     <div class="grid-2">
       <div class="icard reveal">
-        <div class="tagline">Daily — reverse pyramid 5 / 3 / 1</div>
+        <div class="tagline">Daily + warm-up — descending pyramid 6/4/2</div>
         <h4><span class="e">🧱</span> McGill Big 3</h4>
-        <p>Each rep is a ~10-second hold, ~20–30s rest. Progress by adding reps, never load or longer holds. Not first thing on waking — wait ~1 hr out of bed.</p>
+        <p>Open every session with these. Each rep is a hold <b>under ~10 seconds</b>, ~20–30s rest, descending reps per side (e.g. 6/4/2). Brace <b>360°</b> (push abs out against your fingers), never hollow. Progress by adding <b>reps, never longer holds</b>. Not first thing on waking — wait ~1 hr out of bed.</p>
         <ul>
           <li><b>Curl-up</b> — hands under your lumbar arch, lift head/shoulders a couple inches. No crunching.</li>
           <li><b>Side plank</b> — knees bent (easier) or from the feet; straight line shoulder–hip–ankle.</li>
@@ -394,7 +395,7 @@ body.standard .safe-only{display:none}
         <div class="tagline">Daily movement</div>
         <h4><span class="e">🚶</span> Walking &amp; decompression</h4>
         <ul>
-          <li><b>Walk 20–40 min daily</b> — first-line for disc health; feeds the disc, keeps you mobile.</li>
+          <li><b>Walk 20–40 min daily, progressive</b> — first-line for disc health (WalkBack RCT, Lancet 2024). Treat it as real volume, not a warm-up afterthought.</li>
           <li><b>Dead hangs (optional)</b> — easy, 2–3 × 20–30s, only if it feels good.</li>
           <li><b>McKenzie press-ups</b> — <i>only if your PT confirms you're extension-biased.</i> 1–2 × 10, a few times a day. If extension worsens leg symptoms, skip entirely.</li>
           <li><b>Warm-up:</b> 5 min walk → Big 3 → hip/glute activation → ramp-up sets. No static lumbar stretching on an acute disc.</li>
@@ -429,11 +430,12 @@ body.standard .safe-only{display:none}
       <div class="step"><div class="sn"></div><p>Each session, <b>add reps</b> at that load until you hit the <b>top of the range on all sets</b>.</p></div>
       <div class="step"><div class="sn"></div><p>Then <b>add load</b> (smallest jump available) and reset to the bottom of the range.</p></div>
       <div class="step"><div class="sn"></div><p>Earn it — <b>beat last session's reps</b> before adding weight. Add a <i>set</i> to a muscle only when its progress stalls and you're recovering well.</p></div>
+      <div class="step"><div class="sn"></div><p><b>Symptom-gate every increase.</b> Green-light more load only after a fully pain-free session with clean technique. Heavier on fresh days, lighter (still near failure) when fatigued. Any move that sends pain down the leg gets cut. Think in 12–16 week blocks.</p></div>
     </div>
     <div class="grid-2" style="margin-top:18px">
       <div class="icard reveal">
         <h4><span class="e">📉</span> Deload</h4>
-        <p>Every <b>5–6 weeks</b> (sooner if performance drops two sessions running<span class="safe-only" style="display:inline"> or the back is grumpy</span>): <b>halve the volume</b> (≈1 set per exercise), keep the same days and loads. One week, then resume. Frequency stays — volume is what you pull back.</p>
+        <p>Every <b>5–6 weeks</b> (sooner if performance drops two sessions running<span class="safe-only" style="display:inline"> or the back is grumpy</span>): <b>halve the volume</b> (≈1 set per exercise), keep the same days and loads. One week, then resume. Frequency stays — volume is what you pull back. Or use <b>reactive deloading</b>: just drop a single stalling lift rather than the whole week.</p>
       </div>
       <div class="icard reveal" id="checklist-card">
         <h4><span class="e">✅</span> Execution checklist</h4>
@@ -515,7 +517,8 @@ const PRINCIPLES = [
   ["Fatigue is a cost","Not a stimulus. We protect recovery by keeping the harder compounds off true failure so they don't bleed into the next session."],
   ["Frequency keeps volume low","Muscle protein synthesis is mostly spent ~48h after a session. So each muscle is re-stimulated ~2×/week instead of blasted once."],
   ["Effort is load-dependent","Heavy / loaded movements already recruit fully → leave 1–3 reps in reserve. Machines &amp; isolation only recruit fully at the end → take to failure."],
-  ["High stimulus-to-fatigue picks","Machines and cables let you push to failure safely without a systemic or joint tax. Anchor with one compound, finish with low-fatigue isolation."]
+  ["High stimulus-to-fatigue picks","Machines and cables let you push to failure safely without a systemic or joint tax. Anchor with one compound, finish with low-fatigue isolation."],
+  ["Stretch first, then partials","Long-muscle-length training grows quads, hams, chest and back well — at the target muscle, never the spine. On the last set of tagged isolation work, add 3–6 partial reps in the stretched position: a fatigue-cheap way to add stimulus without adding sets (Wolf 2025; Gschneidner 2025)."]
 ];
 
 const WEEK = {
@@ -546,25 +549,25 @@ const SESSIONS = {
       ["Machine chest press (or flat DB press)","3","6–10","1–2","Supported back, primary press"],
       ["Lat pulldown","3","8–12","1","Full stretch at the top — let the lats lengthen"],
       ["Seated cable row","2","8–12","0–1","Tall, braced torso — don't round forward or heave back"],
-      ["Cable lateral raise","3","12–20","0","To failure, low cost; stay upright"],
-      ["Incline DB curl (stretched)","2","10–15","0","Elbows back = lengthened biceps"],
+      ["Cable lateral raise","3","12–20","0","To failure; last set 3–6 partials in the stretch"],
+      ["Incline DB curl (stretched)","2","10–15","0","Elbows back = lengthened biceps; last set partials"],
       ["Overhead cable triceps ext","2","10–15","0","Lengthened, to failure"],
       ["Pallof press","2","10–12/sd","—","Anti-rotation hold, neutral spine",true]
     ]},
     {id:"Lower A",focus:"Quad bias — no hinge, no axial load",rows:[
       ["Leg press","3","10–15","1–2","Hips/low back FLAT; stop before the pelvis tucks. Feet slightly high"],
       ["Seated leg curl","3","10–15","0–1","Safest and best hamstring builder (lengthened)"],
-      ["Leg extension","2","12–20","0","To failure; deep bottom = stretched quad"],
+      ["Leg extension","2","12–20","0","To failure; last set + 3–6 stretched partials at the bottom"],
       ["Cable glute kickback / Glute Drive","2","12–20","0–1","Stop the moment the low back starts to arch"],
-      ["Seated calf raise","3","12–20","0–1","No spinal load; pause in the stretch"],
-      ["McGill Big 3","—","5/3/1","—","Curl-up · side plank · bird dog (see rehab)",true]
+      ["Seated calf raise","3","12–20","0–1","Pause in the stretch; last set add stretched partials"],
+      ["McGill Big 3 (warm-up)","—","6/4/2","—","Curl-up · side plank · bird dog · holds <10s (see rehab)",true]
     ]},
     {id:"Upper B",focus:"Vertical push / horizontal pull",rows:[
       ["Seated machine or incline DB press","3","8–12","1–2","Back supported (no standing OHP)"],
       ["Chest-supported row","3","8–12","1","Torso supported = lumbar out of the chain"],
       ["Cable pullover or 2nd pulldown","2","10–15","0–1","Lat stretch"],
       ["Cable lateral raise","3","12–20","0","To failure"],
-      ["Rear-delt cable / machine fly","2","12–20","0","To failure"],
+      ["Rear-delt cable / machine fly","2","12–20","0","To failure; last set stretched partials"],
       ["EZ-bar or cable curl","2","8–12","0","Strict — don't swing or arch"],
       ["Triceps pushdown","2","10–15","0","To failure"],
       ["Side plank","2","20–30s/sd","—","Neutral spine",true]
