@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PROTOCOL — High-Frequency, Low-Volume Hypertrophy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#08090A; --bg-2:#0E0F11; --card:#141518; --card-2:#191B1F;
+  --line:#26282D; --line-2:#33363C;
+  --txt:#EDEEF0; --muted:#9A9DA4; --faint:#6B6E76;
+  --accent:#C6FF3D; --accent-2:#7BE0C2; --warn:#FFB454; --danger:#FF6B6B;
+  --r:18px; --maxw:1120px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--txt);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  line-height:1.6; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3,h4,.dispfont{font-family:'Space Grotesk',sans-serif;letter-spacing:-.02em}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.accent{color:var(--accent)}
+.mono{font-variant-numeric:tabular-nums}
+
+/* ambient glow */
+.glow{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.glow::before{content:"";position:absolute;top:-20%;left:50%;transform:translateX(-50%);
+  width:900px;height:600px;background:radial-gradient(circle, rgba(198,255,61,.10), transparent 60%);filter:blur(40px)}
+.glow::after{content:"";position:absolute;bottom:-10%;right:-10%;
+  width:600px;height:600px;background:radial-gradient(circle, rgba(123,224,194,.07), transparent 60%);filter:blur(40px)}
+
+/* NAV */
+header.nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+  background:rgba(8,9,10,.72);border-bottom:1px solid var(--line)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk';font-weight:700;font-size:18px}
+.logo .dot{width:11px;height:11px;border-radius:3px;background:var(--accent);box-shadow:0 0 14px var(--accent)}
+.nav-links{display:flex;gap:28px}
+.nav-links a{color:var(--muted);font-size:14px;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--txt)}
+@media(max-width:880px){.nav-links{display:none}}
+
+/* version toggle */
+.toggle{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;gap:2px}
+.toggle button{border:0;background:transparent;color:var(--muted);font-family:'Inter';font-weight:600;
+  font-size:12.5px;padding:7px 14px;border-radius:999px;cursor:pointer;transition:all .25s;white-space:nowrap}
+.toggle button.active{background:var(--accent);color:#0b0b0b}
+
+/* HERO */
+.hero{position:relative;z-index:1;padding:90px 0 60px}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--accent-2);border:1px solid var(--line-2);background:var(--card);
+  padding:7px 14px;border-radius:999px;margin-bottom:26px}
+.eyebrow .pulse{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(198,255,61,.5)}50%{opacity:.7;box-shadow:0 0 0 7px rgba(198,255,61,0)}}
+.hero h1{font-size:clamp(40px,6.4vw,76px);font-weight:700;line-height:1.02;max-width:14ch}
+.hero h1 .g{background:linear-gradient(120deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{color:var(--muted);font-size:clamp(16px,2.1vw,20px);max-width:60ch;margin-top:24px}
+.hero .credit{margin-top:18px;color:var(--faint);font-size:14px}
+.hero .credit b{color:var(--txt);font-weight:600}
+.cta-row{display:flex;gap:14px;margin-top:36px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:15px;padding:14px 24px;border-radius:12px;cursor:pointer;transition:transform .15s,box-shadow .2s;border:1px solid transparent}
+.btn-pri{background:var(--accent);color:#0a0a0a;box-shadow:0 8px 30px rgba(198,255,61,.22)}
+.btn-pri:hover{transform:translateY(-2px);box-shadow:0 12px 38px rgba(198,255,61,.3)}
+.btn-sec{background:var(--card);border-color:var(--line-2);color:var(--txt)}
+.btn-sec:hover{border-color:var(--accent);transform:translateY(-2px)}
+
+/* STAT STRIP */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:64px}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px 22px;position:relative;overflow:hidden}
+.stat::before{content:"";position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--accent),transparent)}
+.stat .num{font-family:'Space Grotesk';font-weight:700;font-size:34px;line-height:1}
+.stat .lbl{color:var(--muted);font-size:13.5px;margin-top:8px}
+
+/* SECTIONS */
+section{position:relative;z-index:1;padding:72px 0;border-top:1px solid var(--line)}
+.sec-head{margin-bottom:40px;max-width:64ch}
+.sec-tag{font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
+.sec-head h2{font-size:clamp(28px,4vw,42px);font-weight:700;margin-top:12px}
+.sec-head p{color:var(--muted);margin-top:14px;font-size:16.5px}
+
+/* medical banner */
+.med{background:linear-gradient(180deg,rgba(255,180,84,.08),rgba(255,180,84,.02));border:1px solid rgba(255,180,84,.35);
+  border-radius:var(--r);padding:28px;display:flex;gap:20px;align-items:flex-start}
+.med .ic{font-size:26px;line-height:1;flex-shrink:0}
+.med h3{color:var(--warn);font-size:19px;margin-bottom:8px}
+.med p{color:var(--muted);font-size:15px}
+.med ul{margin:12px 0 0 0;padding-left:18px;color:var(--muted);font-size:15px}
+.med li{margin-bottom:8px}
+.med b{color:var(--txt)}
+.med .stop{color:var(--danger);font-weight:600}
+
+/* principle cards */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:900px){.grid-3{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.grid-3{grid-template-columns:1fr}}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:26px;transition:transform .25s,border-color .25s}
+.pcard:hover{transform:translateY(-4px);border-color:var(--line-2)}
+.pcard .pn{font-family:'Space Grotesk';font-weight:700;font-size:15px;color:#0a0a0a;background:var(--accent);
+  width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.pcard h4{font-size:17px;margin-bottom:8px}
+.pcard p{color:var(--muted);font-size:14.5px}
+
+/* week strip */
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:12px}
+@media(max-width:760px){.week{grid-template-columns:repeat(2,1fr)}}
+.day{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 14px;text-align:center;transition:.25s}
+.day.train{border-color:var(--line-2);background:var(--card-2)}
+.day.train:hover{border-color:var(--accent);transform:translateY(-3px)}
+.day .dow{font-size:12px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.day .dname{font-family:'Space Grotesk';font-weight:700;font-size:18px;margin-top:8px}
+.day .dsub{font-size:12px;color:var(--muted);margin-top:5px;min-height:30px}
+.day.off .dname{color:var(--faint)}
+
+/* sessions tabs */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.tab{background:var(--card);border:1px solid var(--line);color:var(--muted);font-family:'Space Grotesk';font-weight:600;
+  font-size:14px;padding:11px 18px;border-radius:11px;cursor:pointer;transition:.2s}
+.tab:hover{color:var(--txt);border-color:var(--line-2)}
+.tab.active{background:var(--accent);color:#0a0a0a;border-color:var(--accent)}
+.session{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.session-head{padding:22px 26px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px}
+.session-head h3{font-size:21px}
+.session-head .focus{color:var(--accent-2);font-size:13.5px;font-weight:600}
+.tbl{width:100%;border-collapse:collapse;font-size:14.5px}
+.tbl th{text-align:left;color:var(--faint);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em;
+  padding:14px 26px;border-bottom:1px solid var(--line)}
+.tbl td{padding:15px 26px;border-bottom:1px solid var(--line);color:var(--muted);vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tr:hover td{background:var(--card-2)}
+.tbl td.ex{color:var(--txt);font-weight:600;font-family:'Space Grotesk'}
+.tbl td.ex.core{color:var(--accent)}
+.pill{display:inline-block;font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:7px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill.sets{background:rgba(123,224,194,.12);color:var(--accent-2)}
+.pill.reps{background:rgba(255,255,255,.06);color:var(--txt)}
+.pill.rir-low{background:rgba(198,255,61,.14);color:var(--accent)}
+.pill.rir-mid{background:rgba(255,180,84,.12);color:var(--warn)}
+.note{font-size:13px;color:var(--faint)}
+
+/* changed table / two-col lists */
+.changed{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.changed .ch-row{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line)}
+.changed .ch-row:last-child{border-bottom:0}
+.changed .ch-cell{padding:16px 22px;font-size:14.5px}
+.changed .rm{color:var(--muted);border-right:1px solid var(--line)}
+.changed .rm s{color:var(--faint)}
+.changed .rp{color:var(--txt)}
+.changed .rp b{color:var(--accent)}
+.changed .ch-head .ch-cell{font-size:12px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;color:var(--faint);background:var(--card-2)}
+@media(max-width:600px){.changed .ch-row{grid-template-columns:1fr}.changed .rm{border-right:0;border-bottom:1px solid var(--line)}}
+
+/* rehab + generic cards */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.grid-2{grid-template-columns:1fr}}
+.icard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:26px}
+.icard h4{font-size:18px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.icard h4 .e{font-size:20px}
+.icard p,.icard li{color:var(--muted);font-size:14.5px}
+.icard ul{margin:10px 0 0 18px}
+.icard li{margin-bottom:7px}
+.icard .tagline{color:var(--accent-2);font-size:12.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:14px}
+
+/* volume bars */
+.vol{display:grid;grid-template-columns:1fr 1fr;gap:14px 40px}
+@media(max-width:600px){.vol{grid-template-columns:1fr}}
+.vrow{display:flex;align-items:center;gap:14px}
+.vrow .vm{width:90px;font-size:14px;color:var(--txt);font-weight:500;flex-shrink:0}
+.vrow .vbar{flex:1;height:9px;background:var(--card-2);border-radius:999px;overflow:hidden}
+.vrow .vfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));border-radius:999px;transition:width 1s ease}
+.vrow .vn{width:48px;text-align:right;font-size:13.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* checklist */
+.check{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 10px}
+.citem{display:flex;gap:14px;align-items:flex-start;padding:13px 16px;border-radius:12px;transition:.2s;cursor:default}
+.citem:hover{background:var(--card-2)}
+.citem .box{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--line-2);flex-shrink:0;margin-top:1px;
+  display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:13px;transition:.2s}
+.citem.on .box{background:var(--accent);border-color:var(--accent);color:#0a0a0a}
+.citem span{font-size:14.5px;color:var(--muted)}
+.citem.on span{color:var(--txt)}
+
+/* progression steps */
+.steps{counter-reset:s;display:grid;gap:14px}
+.step{display:flex;gap:18px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;align-items:flex-start}
+.step .sn{counter-increment:s;font-family:'Space Grotesk';font-weight:700;color:var(--accent);font-size:20px;min-width:28px}
+.step .sn::before{content:counter(s)}
+.step p{color:var(--muted);font-size:15px}
+.step b{color:var(--txt)}
+
+/* footer */
+footer{position:relative;z-index:1;border-top:1px solid var(--line);padding:48px 0 60px;background:var(--bg-2)}
+footer .sci{color:var(--faint);font-size:13.5px;max-width:80ch;line-height:1.7}
+footer .fbot{display:flex;justify-content:space-between;align-items:center;margin-top:28px;flex-wrap:wrap;gap:14px;color:var(--faint);font-size:13px}
+
+/* reveal anim */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+.safe-only{display:block}
+body.standard .safe-only{display:none}
+</style>
+</head>
+<body class="safe">
+<div class="glow"></div>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <div class="logo"><span class="dot"></span> PROTOCOL</div>
+    <nav class="nav-links">
+      <a href="#principles">Principles</a>
+      <a href="#week">The Week</a>
+      <a href="#sessions">Sessions</a>
+      <a href="#rehab">Rehab</a>
+      <a href="#progression">Progression</a>
+    </nav>
+    <div class="toggle" id="vtoggle">
+      <button data-v="safe" class="active">Spine-Safe</button>
+      <button data-v="standard">Standard</button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" style="border-top:0">
+  <div class="wrap">
+    <div class="eyebrow reveal"><span class="pulse"></span> <span id="hero-eyebrow">Modified for a lumbar herniated disc · L1–L5</span></div>
+    <h1 class="reveal">Build muscle on <span class="g">less volume,</span><br/>more often.</h1>
+    <p class="lead reveal">An upper/lower hypertrophy protocol engineered around one idea: growth comes from the last few hard reps before failure — not from piling on junk sets. Few sets, high effort, twice-a-week frequency.</p>
+    <p class="credit reveal">Built on the published methods of <b>Chris Beardsley</b> (mechanical tension &amp; stimulus-to-fatigue) and <b>Paul Carter</b> (hard sets near failure, low per-session volume, high frequency).</p>
+    <div class="cta-row reveal">
+      <a href="#sessions" class="btn btn-pri">View the sessions →</a>
+      <a href="#principles" class="btn btn-sec">How it works</a>
+    </div>
+
+    <div class="stats reveal">
+      <div class="stat"><div class="num accent">4</div><div class="lbl">training days / week</div></div>
+      <div class="stat"><div class="num">2×</div><div class="lbl">frequency per muscle</div></div>
+      <div class="stat"><div class="num">45–60<span style="font-size:18px">m</span></div><div class="lbl">per session</div></div>
+      <div class="stat"><div class="num" id="stat-sets">~6–10</div><div class="lbl">weekly sets / muscle</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- MEDICAL (safe only) -->
+<section class="safe-only" id="medical">
+  <div class="wrap reveal">
+    <div class="med">
+      <div class="ic">⚠️</div>
+      <div>
+        <h3>Read first — this is built from research, not a clinical exam</h3>
+        <p>A herniated disc is individual. <b>Get this cleared by your physio or doctor before running it.</b> Two things matter most, and only a professional can assess them:</p>
+        <ul>
+          <li><b>Your directional preference.</b> Most posterior herniations feel better with <i>extension</i> and worse with <i>flexion</i> — but ~15–20% are the opposite. This decides whether the rehab work is medicine or aggravation. Don't guess.</li>
+          <li><span class="stop">Symptom rule, non-negotiable:</span> any sharp or radiating pain down the leg (numbness, tingling, sciatica) is a <b>STOP</b> signal — not something to train through.</li>
+        </ul>
+        <p style="margin-top:14px">The whole design principle: <b>load itself isn't the enemy — load through a rounded, flexed spine is.</b> So the spine stays out of the loaded chain entirely (seated, chest-supported, machine movements) while your legs and back still work hard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRINCIPLES -->
+<section id="principles">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-tag">The engine</div>
+      <h2>Seven principles doing the work</h2>
+      <p>Every exercise choice, rep range and effort cue below traces back to these. Understand them once and the program explains itself.</p>
+    </div>
+    <div class="grid-3" id="principles-grid"></div>
+  </div>
+</section>
+
+<!-- WEEK -->
+<section id="week">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-tag">Structure</div>
+      <h2>The week</h2>
+      <p>Four sessions, each muscle trained twice — a heavier compound one day, a lengthened / isolation emphasis the other. <span class="safe-only" style="display:inline">Off-days carry daily rehab.</span></p>
+    </div>
+    <div class="week reveal" id="week-grid"></div>
+  </div>
+</section>
+
+<!-- SESSIONS -->
+<section id="sessions">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-tag">The training</div>
+      <h2>Your four sessions</h2>
+      <p>Effort is load-dependent — leave reps in reserve on the heavy compounds, take machines and isolation to failure. Rest 2–3 min on hard sets.</p>
+    </div>
+    <div class="tabs reveal" id="session-tabs"></div>
+    <div class="reveal" id="session-body"></div>
+    <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:18px">
+      <div class="note"><span class="pill rir-low">RIR 0–1</span> &nbsp;take to / near failure</div>
+      <div class="note"><span class="pill rir-mid">RIR 1–3</span> &nbsp;leave reps in the tank</div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT CHANGED (safe only) -->
+<section class="safe-only" id="changed">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-tag">Spine-safe swaps</div>
+      <h2>What changed, and why</h2>
+      <p>Everything that loads or flexes the lumbar spine is out. The muscles still get trained hard — just with the spine removed from the loaded chain.</p>
+    </div>
+    <div class="changed reveal">
+      <div class="ch-row ch-head"><div class="ch-cell">Removed — spine risk</div><div class="ch-cell">Replaced with — spine-safe</div></div>
+      <div class="ch-row"><div class="ch-cell rm rp"><s>Deadlift / RDL / any hip hinge</s></div><div class="ch-cell rp"><b>Seated &amp; lying leg curls</b> — train hams fully, zero hinge</div></div>
+      <div class="ch-row"><div class="ch-cell rm"><s>Barbell back squat / standing work</s></div><div class="ch-cell rp"><b>Leg press (strict depth) + belt squat</b> — load off the spine</div></div>
+      <div class="ch-row"><div class="ch-cell rm"><s>Hack squat (axial, debated)</s></div><div class="ch-cell rp">Leg press / belt squat / leg extension</div></div>
+      <div class="ch-row"><div class="ch-cell rm"><s>Standing calf raise</s></div><div class="ch-cell rp"><b>Seated + leg-press calf raise</b></div></div>
+      <div class="ch-row"><div class="ch-cell rm"><s>Standing overhead press</s></div><div class="ch-cell rp"><b>Seated / supported press</b></div></div>
+      <div class="ch-row"><div class="ch-cell rm"><s>Bent-over rows</s></div><div class="ch-cell rp"><b>Chest-supported &amp; machine rows</b></div></div>
+      <div class="ch-row"><div class="ch-cell rm"><s>Sit-ups / crunches / Russian twists</s></div><div class="ch-cell rp"><b>McGill Big 3 + Pallof + planks</b> — anti-movement core</div></div>
+    </div>
+    <p class="note" style="margin-top:16px"><b style="color:var(--warn)">Debated, left out on purpose:</b> hip thrust, hack squat, Nordic curl/GHR, reverse hyper, back extension. Usable for some people in later rehab — add only later, only with your PT's sign-off.</p>
+  </div>
+</section>
+
+<!-- REHAB (safe only) -->
+<section class="safe-only" id="rehab">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-tag">The part that heals</div>
+      <h2>Daily rehab &amp; supportive work</h2>
+      <p>Done on off-days and as a warm-up. Costs almost nothing and builds a spine that protects every lift.</p>
+    </div>
+    <div class="grid-2">
+      <div class="icard reveal">
+        <div class="tagline">Daily — reverse pyramid 5 / 3 / 1</div>
+        <h4><span class="e">🧱</span> McGill Big 3</h4>
+        <p>Each rep is a ~10-second hold, ~20–30s rest. Progress by adding reps, never load or longer holds. Not first thing on waking — wait ~1 hr out of bed.</p>
+        <ul>
+          <li><b>Curl-up</b> — hands under your lumbar arch, lift head/shoulders a couple inches. No crunching.</li>
+          <li><b>Side plank</b> — knees bent (easier) or from the feet; straight line shoulder–hip–ankle.</li>
+          <li><b>Bird dog</b> — neutral spine, extend opposite arm + leg, no arching or twisting.</li>
+        </ul>
+      </div>
+      <div class="icard reveal">
+        <div class="tagline">Daily movement</div>
+        <h4><span class="e">🚶</span> Walking &amp; decompression</h4>
+        <ul>
+          <li><b>Walk 20–40 min daily</b> — first-line for disc health; feeds the disc, keeps you mobile.</li>
+          <li><b>Dead hangs (optional)</b> — easy, 2–3 × 20–30s, only if it feels good.</li>
+          <li><b>McKenzie press-ups</b> — <i>only if your PT confirms you're extension-biased.</i> 1–2 × 10, a few times a day. If extension worsens leg symptoms, skip entirely.</li>
+          <li><b>Warm-up:</b> 5 min walk → Big 3 → hip/glute activation → ramp-up sets. No static lumbar stretching on an acute disc.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VOLUME -->
+<section id="volume">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-tag">The dose</div>
+      <h2>Weekly set tally</h2>
+      <p>Deliberately in the low-but-productive band. Arms and rear delts get extra indirect work from the compounds. If a muscle stalls, add one set — don't start bloated.</p>
+    </div>
+    <div class="icard reveal"><div class="vol" id="vol-grid"></div></div>
+  </div>
+</section>
+
+<!-- PROGRESSION -->
+<section id="progression">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-tag">Getting stronger</div>
+      <h2>Double progression</h2>
+      <p>The whole engine of getting bigger over time. Earn the weight before you add it.</p>
+    </div>
+    <div class="steps reveal">
+      <div class="step"><div class="sn"></div><p>Pick a load you can hit the <b>bottom</b> of the rep range for at the target RIR.</p></div>
+      <div class="step"><div class="sn"></div><p>Each session, <b>add reps</b> at that load until you hit the <b>top of the range on all sets</b>.</p></div>
+      <div class="step"><div class="sn"></div><p>Then <b>add load</b> (smallest jump available) and reset to the bottom of the range.</p></div>
+      <div class="step"><div class="sn"></div><p>Earn it — <b>beat last session's reps</b> before adding weight. Add a <i>set</i> to a muscle only when its progress stalls and you're recovering well.</p></div>
+    </div>
+    <div class="grid-2" style="margin-top:18px">
+      <div class="icard reveal">
+        <h4><span class="e">📉</span> Deload</h4>
+        <p>Every <b>5–6 weeks</b> (sooner if performance drops two sessions running<span class="safe-only" style="display:inline"> or the back is grumpy</span>): <b>halve the volume</b> (≈1 set per exercise), keep the same days and loads. One week, then resume. Frequency stays — volume is what you pull back.</p>
+      </div>
+      <div class="icard reveal" id="checklist-card">
+        <h4><span class="e">✅</span> Execution checklist</h4>
+        <div class="check" id="checklist" style="border:0;padding:6px 0"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p class="sci"><b style="color:var(--muted)">A note on the science.</b> The "low volume is enough / only the last few reps count" model is Beardsley's and Carter's genuine position and is the basis of this program — but it's contested; the higher-volume camp shows gains still rising into 10–20 sets/muscle/week. This program sits in the overlap where both camps agree you grow, at the lowest time<span class="safe-only" style="display:inline"> and — critically here — the lowest spinal cost</span>. <span class="safe-only" style="display:inline">The spine-safe choices draw on Stuart McGill's work, Barbell Medicine, and PT/biomechanics sources; the genuinely debated exercises were left out on purpose. None of this replaces an exam by your physio.</span></p>
+    <div class="fbot">
+      <div class="logo" style="font-size:15px"><span class="dot"></span> PROTOCOL</div>
+      <div>High-frequency, low-volume hypertrophy · <span id="footer-mode">Spine-safe build</span></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ---------- DATA ---------- */
+const PRINCIPLES = [
+  ["Tension is the only driver","Mechanical tension on the fiber — earned in the last few hard reps before failure, when the muscle is fully recruited and moving slowly. We bank those reps."],
+  ["Most volume is junk","Only the final ~3–5 reps of a hard set stimulate growth. So: few sets taken close to failure, not high set totals at mediocre effort."],
+  ["Fatigue is a cost","Not a stimulus. We protect recovery by keeping the harder compounds off true failure so they don't bleed into the next session."],
+  ["Frequency keeps volume low","Muscle protein synthesis is mostly spent ~48h after a session. So each muscle is re-stimulated ~2×/week instead of blasted once."],
+  ["Effort is load-dependent","Heavy / loaded movements already recruit fully → leave 1–3 reps in reserve. Machines &amp; isolation only recruit fully at the end → take to failure."],
+  ["High stimulus-to-fatigue picks","Machines and cables let you push to failure safely without a systemic or joint tax. Anchor with one compound, finish with low-fatigue isolation."]
+];
+
+const WEEK = {
+  safe:[
+    ["Mon","Upper A","Horizontal push / vertical pull",true],
+    ["Tue","Lower A","Quad bias",true],
+    ["Wed","Off","Walk + McGill Big 3",false],
+    ["Thu","Upper B","Vertical push / horizontal pull",true],
+    ["Fri","Lower B","Hamstring / glute / single-leg",true],
+    ["Sat","Off","Daily rehab",false],
+    ["Sun","Off","Daily rehab",false]
+  ],
+  standard:[
+    ["Mon","Upper A","Horizontal push / vertical pull",true],
+    ["Tue","Lower A","Quad / squat bias",true],
+    ["Wed","Off","Recovery",false],
+    ["Thu","Upper B","Vertical push / horizontal pull",true],
+    ["Fri","Lower B","Hamstring / hinge bias",true],
+    ["Sat","Off","Recovery",false],
+    ["Sun","Off","Recovery",false]
+  ]
+};
+
+// row: [exercise, sets, reps, rir, note, isCore]
+const SESSIONS = {
+  safe:[
+    {id:"Upper A",focus:"Horizontal push / vertical pull",rows:[
+      ["Machine chest press (or flat DB press)","3","6–10","1–2","Supported back, primary press"],
+      ["Lat pulldown","3","8–12","1","Full stretch at the top — let the lats lengthen"],
+      ["Seated cable row","2","8–12","0–1","Tall, braced torso — don't round forward or heave back"],
+      ["Cable lateral raise","3","12–20","0","To failure, low cost; stay upright"],
+      ["Incline DB curl (stretched)","2","10–15","0","Elbows back = lengthened biceps"],
+      ["Overhead cable triceps ext","2","10–15","0","Lengthened, to failure"],
+      ["Pallof press","2","10–12/sd","—","Anti-rotation hold, neutral spine",true]
+    ]},
+    {id:"Lower A",focus:"Quad bias — no hinge, no axial load",rows:[
+      ["Leg press","3","10–15","1–2","Hips/low back FLAT; stop before the pelvis tucks. Feet slightly high"],
+      ["Seated leg curl","3","10–15","0–1","Safest and best hamstring builder (lengthened)"],
+      ["Leg extension","2","12–20","0","To failure; deep bottom = stretched quad"],
+      ["Cable glute kickback / Glute Drive","2","12–20","0–1","Stop the moment the low back starts to arch"],
+      ["Seated calf raise","3","12–20","0–1","No spinal load; pause in the stretch"],
+      ["McGill Big 3","—","5/3/1","—","Curl-up · side plank · bird dog (see rehab)",true]
+    ]},
+    {id:"Upper B",focus:"Vertical push / horizontal pull",rows:[
+      ["Seated machine or incline DB press","3","8–12","1–2","Back supported (no standing OHP)"],
+      ["Chest-supported row","3","8–12","1","Torso supported = lumbar out of the chain"],
+      ["Cable pullover or 2nd pulldown","2","10–15","0–1","Lat stretch"],
+      ["Cable lateral raise","3","12–20","0","To failure"],
+      ["Rear-delt cable / machine fly","2","12–20","0","To failure"],
+      ["EZ-bar or cable curl","2","8–12","0","Strict — don't swing or arch"],
+      ["Triceps pushdown","2","10–15","0","To failure"],
+      ["Side plank","2","20–30s/sd","—","Neutral spine",true]
+    ]},
+    {id:"Lower B",focus:"Hamstring / glute / single-leg — no hinge",rows:[
+      ["Belt squat (else leg press, feet high)","3","10–12","1–2","Loads hips, slightly decompresses spine. Stay upright"],
+      ["Lying leg curl","3","10–15","0","Different ham stimulus than seated"],
+      ["DB Bulgarian split squat","2","10–12/lg","1","DBs at your SIDES, torso upright, hold a rack for balance"],
+      ["Cable glute kickback / hip-abduction","2","12–20","0","Isolation, no spine load"],
+      ["Leg-press calf raise (legs near-straight)","3","12–20","0–1","Long gastroc, still spine-safe"],
+      ["Bird dog + dead bug","2","8–10/sd","—","Neutral spine, slow",true]
+    ]}
+  ],
+  standard:[
+    {id:"Upper A",focus:"Horizontal push / vertical pull",rows:[
+      ["Machine chest press (or flat DB press)","3","6–10","1–2","Primary press, stay off failure"],
+      ["Lat pulldown","3","8–12","1","Full stretch at the top"],
+      ["Seated cable row","2","8–12","0–1","Squeeze, control"],
+      ["Cable lateral raise","3","12–20","0","To failure, low cost"],
+      ["Incline DB curl (stretched)","2","10–15","0","Elbows back = lengthened biceps"],
+      ["Overhead cable triceps ext","2","10–15","0","Lengthened, to failure"]
+    ]},
+    {id:"Lower A",focus:"Quad / squat bias",rows:[
+      ["Hack squat or pendulum squat","3","6–10","1–2","Deep, primary quad driver"],
+      ["Seated leg curl","3","8–12","0–1","Lengthened hamstring"],
+      ["Leg extension","2","12–20","0","To failure; lengthened partials on last set"],
+      ["Standing calf raise","3","8–15","0–1","Full stretch, pause at the bottom"],
+      ["Hanging leg raise (optional)","2","10–15","1","Core"]
+    ]},
+    {id:"Upper B",focus:"Vertical push / horizontal pull",rows:[
+      ["Incline machine or DB press","3","8–12","1–2","Upper-chest bias"],
+      ["Chest-supported row","3","8–12","1","Spares the lower back"],
+      ["Cable pullover or 2nd pulldown","2","10–15","0–1","Lat stretch"],
+      ["Cable lateral raise","3","12–20","0","To failure"],
+      ["Rear-delt cable / machine fly","2","12–20","0","To failure"],
+      ["EZ-bar or cable curl","2","8–12","0",""],
+      ["Triceps pushdown","2","10–15","0","To failure"]
+    ]},
+    {id:"Lower B",focus:"Hamstring / hinge bias",rows:[
+      ["Romanian deadlift","3","6–10","2","Keep 2 in the tank — high systemic cost"],
+      ["Leg press (feet low = quad)","3","10–15","1",""],
+      ["Lying leg curl","2","10–15","0","Different ham stimulus than seated"],
+      ["Bulgarian split squat","2","10–12/lg","1","Glutes + single-leg"],
+      ["Seated calf raise","3","10–20","0","Soleus, to failure"]
+    ]}
+  ]
+};
+
+const VOLUME = {
+  safe:[["Chest",6,10],["Quads",10,14],["Back / lats",10,14],["Hamstrings",6,10],["Side delts",6,10],["Glutes",5,10],["Rear delts",2,8],["Calves",6,10],["Biceps",4,8],["Triceps",4,8]],
+  standard:[["Chest",7,10],["Quads",10,14],["Back / lats",10,14],["Hamstrings",8,12],["Side delts",6,10],["Calves",6,10],["Rear delts",2,8],["Biceps",4,8],["Triceps",4,8]]
+};
+
+const CHECKLIST = {
+  safe:[
+    "Neutral spine every rep. Any leg pain / numbness = stop the set.",
+    "Loaded / harder movements: 1–3 RIR. Machines / isolation: 0–1 RIR / failure.",
+    "Leg press &amp; split squats: hips flat, upright torso, no rounding at the bottom.",
+    "2–3 min rest on hard sets. Controlled eccentric, natural slowdown near failure.",
+    "Big 3 + walk on most days. Warm up; no early-morning spinal loading; no static lumbar stretching.",
+    "Session past ~60 min = junk crept in. Cut it.",
+    "Log every set's load + reps."
+  ],
+  standard:[
+    "Heavy compounds: 1–3 RIR. Never grind a loaded compound to failure.",
+    "Machines, cables, isolation: 0–1 RIR / true failure. Empty the tank here.",
+    "2–3 min rest on every set that counts.",
+    "Controlled eccentric, natural slowdown near failure — no fake-slow light reps.",
+    "Load the stretch on quads, hams, chest, back.",
+    "Session past ~60 min = junk added. Cut it.",
+    "Log every set's load + reps."
+  ]
+};
+
+/* ---------- RENDER ---------- */
+const $ = s => document.querySelector(s);
+let current = "safe";
+
+function rirClass(r){ if(r==="—")return ""; const lo=parseInt(r,10); return lo>=1 ? "rir-mid" : "rir-low"; }
+
+function render(v){
+  current=v;
+  document.body.classList.toggle("standard", v==="standard");
+  // hero eyebrow + stats + footer
+  $("#hero-eyebrow").textContent = v==="safe" ? "Modified for a lumbar herniated disc · L1–L5" : "Upper / Lower · general build";
+  $("#stat-sets").textContent = v==="safe" ? "~6–10" : "~8–10";
+  $("#footer-mode").textContent = v==="safe" ? "Spine-safe build" : "Standard build";
+
+  // principles
+  $("#principles-grid").innerHTML = PRINCIPLES.map((p,i)=>
+    `<div class="pcard"><div class="pn">${i+1}</div><h4>${p[0]}</h4><p>${p[1]}</p></div>`).join("");
+
+  // week
+  $("#week-grid").innerHTML = WEEK[v].map(d=>{
+    const cls = d[3] ? "day train" : "day off";
+    return `<div class="${cls}"><div class="dow">${d[0]}</div><div class="dname">${d[1]}</div><div class="dsub">${d[2]}</div></div>`;
+  }).join("");
+
+  // session tabs
+  const sess = SESSIONS[v];
+  $("#session-tabs").innerHTML = sess.map((s,i)=>
+    `<button class="tab ${i===0?'active':''}" data-i="${i}">${s.id}</button>`).join("");
+  renderSession(0);
+
+  // volume
+  const vol = VOLUME[v]; const max = 16;
+  $("#vol-grid").innerHTML = vol.map(m=>{
+    const pct = Math.round((m[2]/max)*100);
+    const label = m[1]===m[2] ? `~${m[1]}` : `${m[1]}–${m[2]}`;
+    return `<div class="vrow"><div class="vm">${m[0]}</div><div class="vbar"><div class="vfill" style="width:0" data-w="${pct}"></div></div><div class="vn">${label}</div></div>`;
+  }).join("");
+  setTimeout(()=>document.querySelectorAll(".vfill").forEach(f=>f.style.width=f.dataset.w+"%"),120);
+
+  // checklist
+  $("#checklist").innerHTML = CHECKLIST[v].map(c=>
+    `<div class="citem"><div class="box">✓</div><span>${c}</span></div>`).join("");
+  document.querySelectorAll(".citem").forEach(it=>it.addEventListener("click",()=>it.classList.toggle("on")));
+
+  observeReveals();
+}
+
+function renderSession(i){
+  const s = SESSIONS[current][i];
+  const body = s.rows.map(r=>{
+    const core = r[5] ? " core" : "";
+    const rir = r[3];
+    const rirCell = rir==="—" ? `<span class="note">core</span>` : `<span class="pill ${rirClass(rir)}">${rir}</span>`;
+    return `<tr>
+      <td class="ex${core}">${r[0]}</td>
+      <td><span class="pill sets">${r[1]}</span></td>
+      <td><span class="pill reps">${r[2]}</span></td>
+      <td>${rirCell}</td>
+      <td class="note">${r[4]}</td>
+    </tr>`;
+  }).join("");
+  $("#session-body").innerHTML = `
+    <div class="session">
+      <div class="session-head"><h3>${s.id}</h3><div class="focus">${s.focus}</div></div>
+      <table class="tbl">
+        <thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>RIR</th><th>Notes</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>`;
+  document.querySelectorAll("#session-tabs .tab").forEach((t,j)=>t.classList.toggle("active",i===j));
+}
+
+/* events */
+$("#session-tabs").addEventListener("click",e=>{
+  const b=e.target.closest(".tab"); if(b) renderSession(+b.dataset.i);
+});
+$("#vtoggle").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b)return;
+  document.querySelectorAll("#vtoggle button").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+  render(b.dataset.v);
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+
+/* reveal on scroll */
+let io;
+function observeReveals(){
+  if(io) io.disconnect();
+  io = new IntersectionObserver(es=>es.forEach(en=>{ if(en.isIntersecting){en.target.classList.add("in");io.unobserve(en.target);}}),{threshold:.12});
+  document.querySelectorAll(".reveal:not(.in)").forEach(el=>io.observe(el));
+}
+
+render("safe");
+</script>
+</body>
+</html>
