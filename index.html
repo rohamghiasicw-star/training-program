@@ -234,6 +234,16 @@ footer .fbot{display:flex;justify-content:space-between;align-items:center;margi
 
 .safe-only{display:block}
 body.standard .safe-only{display:none}
+
+/* references */
+.refs{display:grid;gap:2px}
+.refrow{display:flex;gap:14px;padding:12px 4px;border-bottom:1px solid var(--line);align-items:baseline}
+.refrow:last-child{border-bottom:0}
+.refrow .who{min-width:200px;font-weight:600;color:var(--txt);font-size:14px;font-family:'Space Grotesk'}
+.refrow .what{flex:1;color:var(--muted);font-size:13.5px}
+.refrow a{color:var(--accent-2);font-size:12.5px;white-space:nowrap;border-bottom:1px solid transparent;transition:.2s}
+.refrow a:hover{border-color:var(--accent-2)}
+@media(max-width:680px){.refrow{flex-direction:column;gap:4px}.refrow .who{min-width:0}}
 </style>
 </head>
 <body class="safe">
@@ -249,6 +259,7 @@ body.standard .safe-only{display:none}
       <a href="#sessions">Sessions</a>
       <a href="#rehab">Rehab</a>
       <a href="#progression">Progression</a>
+      <a href="#evidence">Evidence</a>
     </nav>
     <div class="toggle" id="vtoggle">
       <button data-v="safe" class="active">Spine-Safe</button>
@@ -263,7 +274,7 @@ body.standard .safe-only{display:none}
     <div class="eyebrow reveal"><span class="pulse"></span> <span id="hero-eyebrow">Modified for a lumbar herniated disc · L1–L5</span></div>
     <h1 class="reveal">Build muscle on <span class="g">less volume,</span><br/>more often.</h1>
     <p class="lead reveal">An upper/lower hypertrophy protocol engineered around one idea: growth comes from the last few hard reps before failure — not from piling on junk sets. Few sets, high effort, twice-a-week frequency.</p>
-    <p class="credit reveal">Built on the published methods of <b>Chris Beardsley</b> (mechanical tension &amp; stimulus-to-fatigue) and <b>Paul Carter</b> (hard sets near failure, low per-session volume, high frequency).</p>
+    <p class="credit reveal">Built on the published methods of <b>Chris Beardsley</b> &amp; <b>Paul Carter</b>, with spine-safety from <b>Dr. Stuart McGill</b> &amp; <b>Dr. Aaron Horschig</b> — and every claim verified against primary research (Schoenfeld, Refalo, Pelland, Wolf). <span class="accent">v2 · research-upgraded.</span></p>
     <div class="cta-row reveal">
       <a href="#sessions" class="btn btn-pri">View the sessions →</a>
       <a href="#principles" class="btn btn-sec">How it works</a>
@@ -288,7 +299,7 @@ body.standard .safe-only{display:none}
         <p>A herniated disc is individual. <b>Get this cleared by your physio or doctor before running it.</b> Two things matter most, and only a professional can assess them:</p>
         <ul>
           <li><b>Your directional preference.</b> Most posterior herniations feel better with <i>extension</i> and worse with <i>flexion</i> — but ~15–20% are the opposite. This decides whether the rehab work is medicine or aggravation. Don't guess.</li>
-          <li><span class="stop">Symptom rule, non-negotiable:</span> any sharp or radiating pain down the leg (numbness, tingling, sciatica) is a <b>STOP</b> signal — not something to train through.</li>
+          <li><span class="stop">Symptom rule, non-negotiable:</span> pain that travels <b>down the leg</b> (numbness, tingling, sciatica = <i>peripheralization</i>) is a <b>STOP</b> signal — cut that movement. Pain that pulls back toward the midline (<i>centralization</i>) is the good direction.</li>
         </ul>
         <p style="margin-top:14px">The whole design principle: <b>load itself isn't the enemy — load through a rounded, flexed spine is.</b> So the spine stays out of the loaded chain entirely (seated, chest-supported, machine movements) while your legs and back still work hard.</p>
       </div>
@@ -399,7 +410,7 @@ body.standard .safe-only{display:none}
     <div class="sec-head reveal">
       <div class="sec-tag">The dose</div>
       <h2>Weekly set tally</h2>
-      <p>Deliberately in the low-but-productive band. Arms and rear delts get extra indirect work from the compounds. If a muscle stalls, add one set — don't start bloated.</p>
+      <p>Anchor to <b>~10–16 direct sets/muscle/week</b> — start near 10–12 and progress into the high-teens only if recovery and symptoms allow (no proven hard ceiling at 20). Count overlapping work fractionally so high frequency doesn't quietly overshoot. If a muscle stalls, add one set — don't start bloated.</p>
     </div>
     <div class="icard reveal"><div class="vol" id="vol-grid"></div></div>
   </div>
@@ -428,6 +439,60 @@ body.standard .safe-only{display:none}
         <h4><span class="e">✅</span> Execution checklist</h4>
         <div class="check" id="checklist" style="border:0;padding:6px 0"></div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVIDENCE -->
+<section id="evidence">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-tag">Verified, not vibes</div>
+      <h2>Evidence &amp; references</h2>
+      <p>This v2 was pressure-tested by a 47-agent research sprint that read primary sources, cross-checked every claim, and flagged the contested ones. Here's what changed and what backs it.</p>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="icard reveal">
+        <div class="tagline">What v2 upgraded</div>
+        <h4><span class="e">⬆️</span> Research-backed changes</h4>
+        <ul>
+          <li><b>Effort capped at 1–3 RIR</b> on most sets; true failure only on spine-neutral machines/isolation. Failure isn't superior for growth <span class="note">(Refalo 2022, ES 0.12, ns)</span>.</li>
+          <li><b>Frequency distributes volume, doesn't add it</b> — it's neutral once weekly sets are equated <span class="note">(Schoenfeld 2019; Pelland 2025)</span>.</li>
+          <li><b>Weekly volume anchored to ~10–16 sets/muscle</b>, fractional counting, progressed by symptoms — not a hard 20-set ceiling.</li>
+          <li><b>Lengthened partials as a last-set finisher</b> only — equal to full ROM, not superior <span class="note">(Gschneidner 2025; Wolf 2025)</span>.</li>
+          <li><b>Symptom-gated load</b> — centralizing pain OK, leg pain = cut the movement.</li>
+          <li><b>Walking promoted to its own pillar</b> <span class="note">(WalkBack RCT, Lancet 2024)</span>.</li>
+        </ul>
+      </div>
+      <div class="icard reveal">
+        <div class="tagline">Honest science</div>
+        <h4><span class="e">⚖️</span> What's contested</h4>
+        <ul>
+          <li>The <b>"only the last ~5 reps count"</b> effective-reps model (Beardsley/Carter) is a useful heuristic for <i>why</i> effort matters — but it's disputed <span class="note">(Stronger By Science)</span>. Not settled fact.</li>
+          <li><b>No proven hard volume ceiling</b> at 20 sets — growth keeps rising with diminishing returns <span class="note">(Pelland 2025)</span>. The 10–16 band is a starting point to progress within.</li>
+          <li><b>"Flexion is THE cause of herniation"</b> is from an in-vitro porcine model — the cautious reading (avoid loaded lumbar flexion) holds, but it's not iron law <span class="note">(Callaghan &amp; McGill 2001)</span>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="med reveal" style="border-color:rgba(123,224,194,.35);background:linear-gradient(180deg,rgba(123,224,194,.07),rgba(123,224,194,.02));margin-bottom:22px">
+      <div class="ic">🔍</div>
+      <div>
+        <h3 style="color:var(--accent-2)">On the three names you asked me to research</h3>
+        <p>Verified by web search and reported straight — not invented:</p>
+        <ul>
+          <li><b>Jacob Ostriker</b> — <b>not a real fitness authority.</b> The name collides with a late <i>astrophysicist</i> (Jeremiah Ostriker) and a separate low-profile entry-level coach, "Jacob Oestreicher." No citable methodology.</li>
+          <li><b>Clark Kent</b> — <b>Superman's fictional alter ego.</b> "Superman workout" articles are themed marketing, not a documented method.</li>
+          <li><b>Dorian Sirachi</b> — a misread of <b>"Dorian Saraci"</b> (handle <i>doriansriracha</i>), a ~20-yr-old influencer who is himself coached by others. If a real "Dorian" was meant, it's likely <b>Dorian Yates</b> (HIT) being confused.</li>
+        </ul>
+        <p style="margin-top:12px">None are citable, so the program is anchored to the verified authorities below instead.</p>
+      </div>
+    </div>
+
+    <div class="icard reveal">
+      <div class="tagline">Sources (real, verified)</div>
+      <div class="refs" id="refs-list"></div>
     </div>
   </div>
 </section>
@@ -574,6 +639,24 @@ const CHECKLIST = {
   ]
 };
 
+const REFS = [
+  ["Chris Beardsley","Mechanical tension / stimulating reps / motor-unit recruitment model (accurately attributed; itself contested).","https://sandcresearch.medium.com/mechanical-loading-and-not-motor-unit-recruitment-is-the-key-to-muscle-growth-8d6f73ada6fc"],
+  ["Paul Carter","Minimum-effective-dose, machine-biased, hard-sets-near-failure hypertrophy programming.","https://www.rgfit.com/blog/Episode-122-How-To-Optimize-Hypertrophy-Training-with-Paul-Carter"],
+  ["Dr. Stuart McGill","Disc-herniation mechanics, the Big 3, endurance-over-strength spine stability, flexion-intolerance.","https://www.backfitpro.com/designing-back-exercise-from-rehabilitation-to-enhancing-performance/"],
+  ["Dr. Aaron Horschig (Squat University)","Movement-intolerance classification, 360° bracing, symptom-gated return to loading.","https://squatuniversity.com/2025/02/13/how-to-fix-back-pain-7-science-backed-steps/"],
+  ["Brad Schoenfeld","Volume dose-response, frequency neutrality, ROM/technique review, proximity to failure.","https://pmc.ncbi.nlm.nih.gov/articles/PMC10801605/"],
+  ["Refalo et al. 2022","Proximity-to-failure meta-analysis: failure not superior for hypertrophy (ES 0.12, ns).","https://pmc.ncbi.nlm.nih.gov/articles/PMC9935748/"],
+  ["Pelland et al. 2024/25","Largest dose-response meta-regression: volume drives growth; frequency negligible when equated.","https://pubmed.ncbi.nlm.nih.gov/41343037/"],
+  ["Schoenfeld, Ogborn & Krieger 2017","Graded volume–hypertrophy dose-response (~0.37%/set).","https://pubmed.ncbi.nlm.nih.gov/27433992/"],
+  ["Wolf et al. 2025","Lengthened partials ≈ full ROM; emphasize the stretched position.","https://pmc.ncbi.nlm.nih.gov/articles/PMC11829627/"],
+  ["Gschneidner et al. 2025","297-subject cluster trial: lengthened partials practically equivalent to full ROM (preprint).","https://sportrxiv.org/index.php/server/preprint/view/485"],
+  ["Menno Henselmans","Train close to (not to) failure; AVT + reactive-deloading autoregulation.","https://mennohenselmans.com/autoregulation-reactive-deloading-avt/"],
+  ["Greg Nuckols (Stronger By Science)","The higher-volume, 'no special effective-reps zone' counterpoint.","https://www.strongerbyscience.com/effective-reps/"],
+  ["Callaghan & McGill 2001","Porcine model: repeated flexion + compression drives herniation (in-vitro; qualified).","https://pubmed.ncbi.nlm.nih.gov/11114441/"],
+  ["WalkBack trial (Lancet 2024)","Progressive walking reduces low-back-pain recurrence and disability (n=701).","https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(24)00755-4/fulltext"],
+  ["Posterior-chain RT meta-analysis","Resistance training reduces LBP pain/disability, strongest in 12–16 week blocks.","https://pmc.ncbi.nlm.nih.gov/articles/PMC7940464/"],
+];
+
 /* ---------- RENDER ---------- */
 const $ = s => document.querySelector(s);
 let current = "safe";
@@ -638,6 +721,16 @@ function render(v){
     store.set(`check:${v}:${it.dataset.ci}`, it.classList.contains("on")?"1":"0");
     flashSaved();
   }));
+
+  // references (static, render once)
+  const rl = $("#refs-list");
+  if(rl && !rl.dataset.done){
+    rl.innerHTML = REFS.map(r=>{
+      const host = r[2].replace(/^https?:\/\/(www\.)?/,"").split("/")[0];
+      return `<div class="refrow"><div class="who">${r[0]}</div><div class="what">${r[1]}</div><a href="${r[2]}" target="_blank" rel="noopener">${host} ↗</a></div>`;
+    }).join("");
+    rl.dataset.done = "1";
+  }
 
   observeReveals();
 }
