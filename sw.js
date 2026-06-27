@@ -1,13 +1,13 @@
 /* PROTOCOL service worker — offline + installable */
-const CACHE = 'protocol-v10';
+const CACHE = 'protocol-v11';
 const ASSETS = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './icons/icon-180.png',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-maskable-512.png'
+  './icons/icon-180-r2.png',
+  './icons/icon-192-r2.png',
+  './icons/icon-512-r2.png',
+  './icons/icon-maskable-512-r2.png'
 ];
 
 self.addEventListener('install', e => {
