@@ -1,5 +1,5 @@
 /* PROTOCOL service worker — offline + installable */
-const CACHE = 'protocol-v11';
+const CACHE = 'protocol-v12';
 const ASSETS = [
   './',
   './index.html',
@@ -23,14 +23,33 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then(cached =>
-      cached || fetch(e.request).then(resp => {
+  const req = e.request;
+  if (req.method !== 'GET') return;
+
+  const isDoc = req.mode === 'navigate'
+    || req.destination === 'document'
+    || (req.headers.get('accept') || '').includes('text/html');
+
+  if (isDoc) {
+    // network-first for the page so a new deploy reaches installed users immediately
+    e.respondWith(
+      fetch(req).then(resp => {
         const copy = resp.clone();
-        caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
+        caches.open(CACHE).then(c => c.put('./index.html', copy)).catch(() => {});
         return resp;
-      }).catch(() => caches.match('./index.html'))
+      }).catch(() => caches.match('./index.html').then(r => r || caches.match('./')))
+    );
+    return;
+  }
+
+  // cache-first for static assets (icons, manifest)
+  e.respondWith(
+    caches.match(req).then(cached =>
+      cached || fetch(req).then(resp => {
+        const copy = resp.clone();
+        caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
+        return resp;
+      }).catch(() => cached)
     )
   );
 });

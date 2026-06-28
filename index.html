@@ -245,6 +245,33 @@ footer .fbot{display:flex;justify-content:space-between;align-items:center;margi
 .safe-only{display:block}
 body.standard .safe-only{display:none}
 
+/* nav link version scoping (Rehab is spine-safe only) */
+.nav-links a.safe-only{display:inline-block}
+body.standard .nav-links a.safe-only{display:none}
+
+/* hero disclaimer (both modes) */
+.disclaimer{margin-top:22px;color:var(--faint);font-size:13px;max-width:72ch;border-left:2px solid var(--line-2);padding-left:12px;line-height:1.55}
+
+/* timer auto-rest toggle */
+.timer-head .autorest{display:inline-flex;align-items:center;gap:6px;margin-left:auto;margin-right:12px;
+  font-family:'Inter';font-weight:600;font-size:12px;color:var(--muted);cursor:pointer;user-select:none}
+.timer-head .autorest input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer;margin:0}
+
+/* two-field log input (weight × reps) */
+td.log .logcell{display:flex;align-items:center;gap:8px}
+.logx{color:var(--faint);font-size:13px;flex:0 0 auto}
+.loginput.logw,.loginput.logr{flex:1 1 0;min-width:0;text-align:center}
+
+/* reduced motion */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+  html{scroll-behavior:auto}
+  .reveal{opacity:1 !important;transform:none !important}
+}
+
+/* keep the last session row clear of the floating timer button on mobile */
+@media(max-width:620px){ #session-body{padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))} }
+
 /* ============ REST TIMER ============ */
 .timer-fab{position:fixed;right:18px;bottom:18px;z-index:80;display:flex;align-items:center;gap:8px;
   background:var(--accent);color:#0a0a0a;border:0;border-radius:999px;padding:13px 18px;cursor:pointer;
@@ -376,7 +403,9 @@ body.standard .safe-only{display:none}
 <div class="timer-scrim" id="timerScrim"></div>
 <div class="timer-sheet" id="timerSheet" role="dialog" aria-label="Rest timer">
   <div class="timer-grab"></div>
-  <div class="timer-head"><span>Rest timer</span><button class="timer-x" id="timerClose" aria-label="Close">✕</button></div>
+  <div class="timer-head"><span>Rest timer</span>
+    <label class="autorest" title="Auto-start rest when you check off a set"><input type="checkbox" id="autoRest"/><span>auto</span></label>
+    <button class="timer-x" id="timerClose" aria-label="Close">✕</button></div>
   <div class="ring-wrap">
     <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
       <circle class="ring-bg" cx="60" cy="60" r="54"/>
@@ -405,13 +434,13 @@ body.standard .safe-only{display:none}
       <a href="#principles">Principles</a>
       <a href="#week">The Week</a>
       <a href="#sessions">Sessions</a>
-      <a href="#rehab">Rehab</a>
+      <a href="#rehab" class="safe-only">Rehab</a>
       <a href="#progression">Progression</a>
       <a href="#evidence">Evidence</a>
     </nav>
-    <div class="toggle" id="vtoggle">
-      <button data-v="safe" class="active">Spine-Safe</button>
-      <button data-v="standard">Standard</button>
+    <div class="toggle" id="vtoggle" role="group" aria-label="Program version">
+      <button data-v="safe" class="active" aria-pressed="true">Spine-Safe</button>
+      <button data-v="standard" aria-pressed="false">Standard</button>
     </div>
   </div>
 </header>
@@ -436,6 +465,7 @@ body.standard .safe-only{display:none}
       <div class="stat"><div class="num">45–60<span style="font-size:18px">m</span></div><div class="lbl">per session</div></div>
       <div class="stat"><div class="num" id="stat-sets">~6–10</div><div class="lbl">weekly sets / muscle</div></div>
     </div>
+    <p class="disclaimer reveal">Not medical advice. Get cleared before starting if you have any injury, and stop any movement that causes sharp or radiating pain.</p>
   </div>
 </section>
 
@@ -489,7 +519,7 @@ body.standard .safe-only{display:none}
       <h2>Your four sessions</h2>
       <p>Effort is load-dependent — leave reps in reserve on the heavy compounds, take machines and isolation to failure. Rest 2–3 min on hard sets.</p>
     </div>
-    <div class="log-hint reveal"><span class="e">📝</span> <span><b>This is your live logbook.</b> Tick off each exercise and type your weights &amp; reps into any row — it saves automatically on this device, no account needed.</span></div>
+    <div class="log-hint reveal"><span class="e">📝</span> <span><b>This is your live logbook.</b> Tick off each set and tap in your weight &amp; reps — it auto-saves on this device. Checking a set off starts your rest timer. Logs are kept separately for each version.</span></div>
     <div class="tabs reveal" id="session-tabs"></div>
     <div class="reveal" id="session-body"></div>
     <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:18px">
@@ -809,6 +839,14 @@ const store = {
 };
 const slug = s => s.replace(/[^a-z0-9]+/gi,"-").toLowerCase();
 const exKey = (sid,name) => `${current}:${sid}:${slug(name)}`;
+// log value <-> weight/reps (backward-compatible: legacy "100 8" still loads)
+function splitLog(v){ if(!v) return ["",""];
+  const m=v.split(/\s*[×x*|]\s*/); if(m.length>=2) return [m[0].trim(), m.slice(1).join(" ").trim()];
+  const sp=v.trim().split(/\s+/); if(sp.length>=2) return [sp[0], sp.slice(1).join(" ")];
+  return [v.trim(), ""]; }
+function joinLog(w,r){ w=(w||"").trim(); r=(r||"").trim(); return (!w&&!r)?"":(w+"×"+r); }
+// default rest by effort: heavier (RIR has a 2/3) -> 2:30, isolation/failure -> 1:30, core -> skip
+function restFor(rir){ if(rir==="—") return 0; return /[23]/.test(rir) ? 150 : 90; }
 let toastT;
 function flashSaved(){
   const t=$("#savetoast"); if(!t)return; t.classList.add("show");
@@ -819,7 +857,14 @@ function rirClass(r){ if(r==="—")return ""; const lo=parseInt(r,10); return lo
 
 function render(v){
   current=v;
+  store.set("ui:version", v);
   document.body.classList.toggle("standard", v==="standard");
+  // keep the segmented toggle in sync (also on cold-restore)
+  document.querySelectorAll("#vtoggle button").forEach(x=>{
+    const on = x.dataset.v===v;
+    x.classList.toggle("active", on);
+    x.setAttribute("aria-pressed", on?"true":"false");
+  });
   // hero eyebrow + stats + footer
   $("#hero-eyebrow").textContent = v==="safe" ? "Modified for a lumbar herniated disc · L1–L5" : "Upper / Lower · general build";
   $("#stat-sets").textContent = v==="safe" ? "~6–10" : "~8–10";
@@ -876,21 +921,25 @@ function render(v){
 
 function renderSession(i){
   currentSessionIndex = i;
+  store.set("ui:session", String(i));
   const s = SESSIONS[current][i];
   const body = s.rows.map(r=>{
     const core = r[5] ? " core" : "";
     const rir = r[3];
     const rirCell = rir==="—" ? `<span class="note">core</span>` : `<span class="pill ${rirClass(rir)}">${rir}</span>`;
     const k = exKey(s.id, r[0]);
-    const logVal = store.get("log:"+k).replace(/"/g,"&quot;");
     const done = store.get("done:"+k)==="1";
     return `<tr class="${done?'donerow':''}">
-      <td class="donecell"><div class="donebox ${done?'on':''}" data-done="${k}">${done?'✓':''}</div></td>
+      <td class="donecell"><div class="donebox ${done?'on':''}" data-done="${k}" data-rest="${restFor(rir)}" role="button" tabindex="0" aria-pressed="${done?'true':'false'}" aria-label="Mark set done">${done?'✓':''}</div></td>
       <td class="ex${core}">${r[0]}<div class="note" style="font-weight:400;margin-top:3px">${r[4]}</div></td>
       <td class="c-sets" data-label="Sets"><span class="pill sets">${r[1]}</span></td>
       <td class="c-reps" data-label="Reps"><span class="pill reps">${r[2]}</span></td>
       <td class="c-rir" data-label="RIR">${rirCell}</td>
-      <td class="log" data-label="Your log"><input class="loginput ${logVal?'filled':''}" data-log="${k}" value="${logVal}" placeholder="weight × reps…" inputmode="text" /></td>
+      <td class="log" data-label="Your log"><div class="logcell">
+        <input class="loginput logw" data-log="${k}" placeholder="kg" inputmode="decimal" aria-label="Weight" />
+        <span class="logx">×</span>
+        <input class="loginput logr" data-log="${k}" placeholder="reps" inputmode="numeric" aria-label="Reps" />
+      </div></td>
     </tr>`;
   }).join("");
   $("#session-body").innerHTML = `
@@ -904,6 +953,13 @@ function renderSession(i){
         <tbody>${body}</tbody>
       </table>
     </div>`;
+  // hydrate inputs from storage via DOM property (no innerHTML round-trip / escaping issues)
+  $("#session-body").querySelectorAll(".logcell").forEach(cell=>{
+    const w=cell.querySelector(".logw"), r=cell.querySelector(".logr");
+    const [wv,rv]=splitLog(store.get("log:"+w.dataset.log));
+    w.value=wv; r.value=rv;
+    const filled=!!(wv||rv); w.classList.toggle("filled",filled); r.classList.toggle("filled",filled);
+  });
   updateProgress();
   document.querySelectorAll("#session-tabs .tab").forEach((t,j)=>t.classList.toggle("active",i===j));
 }
@@ -928,32 +984,42 @@ $("#session-tabs").addEventListener("click",e=>{
   const b=e.target.closest(".tab"); if(b) renderSession(+b.dataset.i);
 });
 
-/* logbook: save weights/reps as you type */
+/* logbook: save weight × reps as you type */
 $("#session-body").addEventListener("input",e=>{
   const inp=e.target.closest(".loginput"); if(!inp)return;
-  store.set("log:"+inp.dataset.log, inp.value);
-  inp.classList.toggle("filled", !!inp.value);
+  const cell=inp.closest(".logcell");
+  const w=cell.querySelector(".logw").value, r=cell.querySelector(".logr").value;
+  store.set("log:"+inp.dataset.log, joinLog(w,r));
+  const filled=!!(w||r); cell.querySelectorAll(".loginput").forEach(x=>x.classList.toggle("filled",filled));
   flashSaved();
 });
-/* logbook: check off exercises + reset */
+/* logbook: check off a set (auto-starts rest) + reset */
 $("#session-body").addEventListener("click",e=>{
   const db=e.target.closest(".donebox");
   if(db){
     const k=db.dataset.done, on=store.get("done:"+k)!=="1";
     store.set("done:"+k, on?"1":"0");
-    db.classList.toggle("on",on); db.textContent=on?"✓":"";
+    db.classList.toggle("on",on); db.textContent=on?"✓":""; db.setAttribute("aria-pressed",on?"true":"false");
     db.closest("tr").classList.toggle("donerow",on);
-    updateProgress(); flashSaved(); return;
+    updateProgress(); flashSaved();
+    // checking a set off starts the rest timer (only on the check, not the uncheck)
+    if(on && window.RestTimer && store.get("autorest")!=="0"){
+      const rest=parseInt(db.dataset.rest||"0",10);
+      if(rest>0){ RestTimer.setDuration(rest); RestTimer.open(); RestTimer.start(); }
+    }
+    return;
   }
   const rb=e.target.closest(".resetbtn");
   if(rb && confirm("Clear all logs and checks for this session?")) resetSession(+rb.dataset.reset);
 });
+/* keyboard: Space/Enter toggles the check-off box */
+$("#session-body").addEventListener("keydown",e=>{
+  const db=e.target.closest(".donebox");
+  if(db && (e.key===" " || e.key==="Enter")){ e.preventDefault(); db.click(); }
+});
 $("#vtoggle").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b)return;
-  document.querySelectorAll("#vtoggle button").forEach(x=>x.classList.remove("active"));
-  b.classList.add("active");
-  render(b.dataset.v);
-  window.scrollTo({top:0,behavior:"smooth"});
+  if(b.dataset.v!==current) render(b.dataset.v);   // render() syncs the toggle highlight
 });
 
 /* reveal on scroll */
@@ -964,26 +1030,44 @@ function observeReveals(){
   document.querySelectorAll(".reveal:not(.in)").forEach(el=>io.observe(el));
 }
 
-render("safe");
+/* boot: restore last-used version + session (falls back to safe / Upper A) */
+(function boot(){
+  let v=store.get("ui:version"); if(v!=="safe" && v!=="standard") v="safe";
+  let i=parseInt(store.get("ui:session")||"0",10);   // read BEFORE render() clobbers ui:session via renderSession(0)
+  render(v);
+  if(!(i>=0 && i<SESSIONS[v].length)) i=0;
+  if(i!==0) renderSession(i);
+})();
 
 /* ============ REST TIMER ============ */
 (function(){
   const fab=$("#timerFab"), sheet=$("#timerSheet"), scrim=$("#timerScrim"),
         ring=$("#ringFg"), readout=$("#timerReadout"), sub=$("#timerSub"),
-        startBtn=$("#timerStart"), C=339.292;
+        startBtn=$("#timerStart"), presetsEl=$("#timerPresets"), autoBox=$("#autoRest"), C=339.292;
   let duration=parseInt(store.get("timer:dur")||"120",10),
-      remaining=duration, running=false, endAt=0, tick=null, audioCtx=null;
+      remaining=duration, running=false, endAt=0, tick=null, audioCtx=null, finishTO=null, wl=null;
+
+  // auto-rest toggle (default ON)
+  if(autoBox){ autoBox.checked = store.get("autorest")!=="0";
+    autoBox.addEventListener("change",()=>store.set("autorest", autoBox.checked?"1":"0")); }
 
   function fmt(s){s=Math.max(0,Math.round(s));return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");}
-  function paint(){
-    readout.textContent=fmt(remaining);
-    ring.style.strokeDashoffset = C*(1-(duration?remaining/duration:0));
-  }
-  function open(){sheet.classList.add("show");scrim.classList.add("show");}
-  function close(){sheet.classList.remove("show");scrim.classList.remove("show");}
+  function paint(){ readout.textContent=fmt(remaining); ring.style.strokeDashoffset=C*(1-(duration?remaining/duration:0)); }
+  function markPreset(sec){ presetsEl.querySelectorAll("button").forEach(b=>b.classList.toggle("on", +b.dataset.sec===sec)); }
+  function clearFinishTO(){ if(finishTO){ clearTimeout(finishTO); finishTO=null; } }
+  function open(){ sheet.classList.add("show"); scrim.classList.add("show"); }
+  function close(){ sheet.classList.remove("show"); scrim.classList.remove("show"); releaseWL(); }
+
+  // keep the screen awake while resting; re-acquire when returning to the tab
+  async function acquireWL(){ try{ if('wakeLock' in navigator && document.visibilityState==='visible' && !wl){
+    wl=await navigator.wakeLock.request('screen'); wl.addEventListener('release',()=>{wl=null;}); } }catch(e){} }
+  function releaseWL(){ try{ wl&&wl.release(); }catch(e){} wl=null; }
+
+  // unlock WebAudio from a user gesture so the end-of-rest beep actually plays on iOS
+  function unlockAudio(){ try{ audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') audioCtx.resume(); }catch(e){} }
   function beep(){
-    try{
-      audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    try{ unlockAudio();
       [0,0.28,0.56].forEach(t=>{
         const o=audioCtx.createOscillator(), g=audioCtx.createGain();
         o.type="sine";o.frequency.value=880;o.connect(g);g.connect(audioCtx.destination);
@@ -994,41 +1078,44 @@ render("safe");
     }catch(e){}
     if(navigator.vibrate) navigator.vibrate([200,90,200,90,200]);
   }
-  function stop(){running=false;clearInterval(tick);tick=null;startBtn.textContent="Start";
-    startBtn.classList.remove("pause");fab.classList.remove("running");}
-  function finish(){stop();remaining=0;paint();sheet.classList.add("done");
-    sub.textContent="rest done";readout.textContent="DONE";beep();
-    setTimeout(()=>{sheet.classList.remove("done");sub.textContent="tap a preset";
-      remaining=duration;paint();},2600);}
-  function start(){
-    if(remaining<=0)remaining=duration;
-    running=true;endAt=Date.now()+remaining*1000;startBtn.textContent="Pause";
-    startBtn.classList.add("pause");fab.classList.add("running");sub.textContent="resting…";
-    sheet.classList.remove("done");
+  function stop(){ running=false; clearInterval(tick); tick=null; releaseWL();
+    startBtn.textContent="Start"; startBtn.classList.remove("pause"); fab.classList.remove("running"); }
+  function finish(){ stop(); remaining=0; paint(); sheet.classList.add("done");
+    sub.textContent="rest done"; readout.textContent="DONE"; beep();
+    clearFinishTO(); finishTO=setTimeout(()=>{ sheet.classList.remove("done"); sub.textContent="tap a preset";
+      remaining=duration; paint(); finishTO=null; },2600); }
+  function start(){ clearFinishTO(); unlockAudio(); if(remaining<=0) remaining=duration;
+    running=true; endAt=Date.now()+remaining*1000; startBtn.textContent="Pause";
+    startBtn.classList.add("pause"); fab.classList.add("running"); sub.textContent="resting…";
+    sheet.classList.remove("done"); acquireWL();
     clearInterval(tick);
-    tick=setInterval(()=>{remaining=(endAt-Date.now())/1000;
-      if(remaining<=0){finish();}else{paint();}},200);
+    tick=setInterval(()=>{ remaining=(endAt-Date.now())/1000; if(remaining<=0) finish(); else paint(); },200);
   }
-  function pause(){running=false;clearInterval(tick);tick=null;remaining=(endAt-Date.now())/1000;
-    startBtn.textContent="Resume";startBtn.classList.remove("pause");fab.classList.remove("running");
-    sub.textContent="paused";}
+  function pause(){ running=false; clearInterval(tick); tick=null; releaseWL();
+    remaining=(endAt-Date.now())/1000; startBtn.textContent="Resume"; startBtn.classList.remove("pause");
+    fab.classList.remove("running"); sub.textContent="paused"; }
+  function setDuration(sec){ clearFinishTO(); duration=sec; remaining=sec; store.set("timer:dur",String(sec));
+    markPreset(sec); sheet.classList.remove("done"); sub.textContent="tap start"; paint(); }
 
-  fab.addEventListener("click",()=>{open();paint();});
+  fab.addEventListener("click",()=>{ unlockAudio(); markPreset(duration); open(); paint(); });
   $("#timerClose").addEventListener("click",close);
   scrim.addEventListener("click",close);
-  $("#timerPresets").addEventListener("click",e=>{
-    const b=e.target.closest("button");if(!b)return;
-    document.querySelectorAll("#timerPresets button").forEach(x=>x.classList.remove("on"));
-    b.classList.add("on");duration=+b.dataset.sec;remaining=duration;store.set("timer:dur",String(duration));
-    stop();sheet.classList.remove("done");sub.textContent="tap start";paint();
-  });
-  startBtn.addEventListener("click",()=>{running?pause():start();});
-  $("#timerAdd").addEventListener("click",()=>{remaining=(running?(endAt-Date.now())/1000:remaining)+30;
-    if(running)endAt=Date.now()+remaining*1000;if(!running&&remaining>duration){duration=Math.ceil(remaining);}
-    paint();});
-  $("#timerReset").addEventListener("click",()=>{stop();remaining=duration;sheet.classList.remove("done");
-    sub.textContent="tap start";paint();});
-  paint();
+  presetsEl.addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b)return; stop(); setDuration(+b.dataset.sec); });
+  startBtn.addEventListener("click",()=>{ unlockAudio(); running?pause():start(); });
+  $("#timerAdd").addEventListener("click",()=>{ clearFinishTO();
+    remaining=(running?(endAt-Date.now())/1000:remaining)+30;
+    if(running) endAt=Date.now()+remaining*1000; else if(remaining>duration) duration=Math.ceil(remaining);
+    sheet.classList.remove("done"); if(!running && sub.textContent==="rest done") sub.textContent="tap start"; paint(); });
+  $("#timerReset").addEventListener("click",()=>{ stop(); clearFinishTO(); remaining=duration;
+    sheet.classList.remove("done"); sub.textContent="tap start"; paint(); });
+
+  // iOS suspends JS while locked/backgrounded: resync (and fire the alert if rest already ended) on return
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && running){
+    acquireWL(); if((endAt-Date.now())<=0) finish(); else paint(); } });
+
+  markPreset(duration); paint();
+  // expose a tiny module so the logbook can start a rest on check-off
+  window.RestTimer = { start, open, setDuration, reset:()=>{ stop(); remaining=duration; paint(); } };
 })();
 
 /* ============ PWA: install + service worker ============ */
